@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>70th Ohio State Convention Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* SVG Map Styles */
+        .map-container {
+            width: 100%;
+            height: auto;
+            max-height: 60vh;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+        }
+
+        .room-shape {
+            fill: #f1f5f9;
+            stroke: #94a3b8;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .room-shape:hover {
+            fill: #cbd5e1;
+            stroke: #475569;
+        }
+
+        .room-shape.active-room {
+            fill: #bae6fd;
+            stroke: #0284c7;
+            stroke-width: 3;
+            filter: drop-shadow(0px 0px 4px rgba(2, 132, 199, 0.4));
+        }
+
+        .room-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            fill: #334155;
+            pointer-events: none; /* Let clicks pass through to the shape */
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        
+        .door {
+            fill: white;
+            stroke: #94a3b8;
+            stroke-width: 1.5;
+        }
+
+        /* Schedule Styles */
+        .schedule-container {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        @media (max-width: 1024px) {
+            .schedule-container {
+                height: auto;
+                max-height: 60vh;
+            }
+        }
+
+        .tab-btn {
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active-tab {
+            border-bottom-color: #0ea5e9;
+            color: #0284c7;
+            font-weight: 600;
+            background-color: #f0f9ff;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .event-card {
+            border-left: 4px solid #cbd5e1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            background-color: #f8fafc;
+            border-left-color: #94a3b8;
+            transform: translateX(4px);
+        }
+
+        .event-card.active-event {
+            background-color: #f0f9ff;
+            border-left-color: #0ea5e9;
+            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .room-badge {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            background-color: #e2e8f0;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        /* Multi-room combinations */
+        .room-group-abc.active-room { fill: #bae6fd; stroke: #0284c7; }
+        .room-group-bc.active-room { fill: #bae6fd; stroke: #0284c7; }
+        .room-group-ab.active-room { fill: #bae6fd; stroke: #0284c7; }
+        .room-group-cd.active-room { fill: #bae6fd; stroke: #0284c7; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">70th Ohio State Convention</h1>
+                <p class="text-slate-300 text-sm mt-1">Hosted by Ohio General Service • Cherry Valley Hotel</p>
+            </div>
+            <div class="bg-slate-800 p-2 rounded text-xs text-slate-300 border border-slate-700 w-full sm:w-auto text-center sm:text-left">
+                <p class="font-semibold text-white mb-1">Important Info:</p>
+                <p>• Registration & Name Tags Required</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
+        
+        <!-- Left: Interactive Map -->
+        <section class="w-full lg:w-1/2 flex flex-col gap-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-2 flex items-center justify-between">
+                    <span>Convention Floor Plan</span>
+                    <span class="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-1 rounded">Interactive</span>
+                </h2>
+                <p class="text-sm text-slate-600 mb-4">Tap a room to see events happening there, or tap an event in the schedule to highlight its room.</p>
+                
+                <div class="map-container">
+                    <!-- Custom SVG representing Cherry Valley Floor Plan.png -->
+                    <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+                            </filter>
+                        </defs>
+
+                        <g transform="scale(0.9) translate(50, 50)" filter="url(#shadow)">
+                            
+                            <!-- WOODHULL COMPLEX (Left side, Pentagon-ish shape) -->
+                            <!-- Woodhull A (Top Left) -->
+                            <polygon id="room-Woodhull_A" class="room-shape" 
+                                     points="100,50 200,50 200,250 160,250 140,270 100,270 50,220 50,100" 
+                                     onclick="selectRoom('Woodhull A')" />
+                            <text x="125" y="150" class="room-label">Woodhull A</text>
+
+                            <!-- Woodhull B (Top Middle) -->
+                            <polygon id="room-Woodhull_B" class="room-shape" 
+                                     points="200,50 300,50 300,250 250,250 230,230 200,230" 
+                                     onclick="selectRoom('Woodhull B')" />
+                            <text x="250" y="150" class="room-label">Woodhull B</text>
+
+                            <!-- Woodhull C (Top Right) -->
+                            <polygon id="room-Woodhull_C" class="room-shape" 
+                                     points="300,50 400,50 450,100 450,250 300,250" 
+                                     onclick="selectRoom('Woodhull C')" />
+                            <text x="365" y="150" class="room-label">Woodhull C</text>
+
+                            <!-- Woodhull D (Middle Right) -->
+                            <polygon id="room-Woodhull_D" class="room-shape" 
+                                     points="310,270 450,270 450,370 310,370 290,340 290,300" 
+                                     onclick="selectRoom('Woodhull D')" />
+                            <text x="380" y="320" class="room-label">Woodhull D</text>
+
+                            <!-- Woodhull E (Bottom Right) -->
+                            <polygon id="room-Woodhull_E" class="room-shape" 
+                                     points="290,390 450,390 450,440 400,490 280,490 280,420" 
+                                     onclick="selectRoom('Woodhull E')" />
+                            <text x="375" y="440" class="room-label">Woodhull E</text>
+
+                            <!-- HALLWAY (Connecting area) -->
+                            <polygon id="room-Woodhull_Hallway" class="room-shape" style="fill: #f8fafc;"
+                                     points="50,220 100,270 140,270 160,250 200,250 200,230 230,230 250,250 300,250 300,270 310,270 290,300 290,340 310,370 290,390 280,420 280,490 240,490 100,350 50,300"
+                                     onclick="selectRoom('Woodhull Hallway')" />
+                            <text x="200" y="320" class="room-label" style="font-size: 12px; fill: #64748b; font-style: italic;">Hallway / Registration</text>
+                            
+                            <!-- Arrow to Denison Library -->
+                            <g transform="translate(10, 290)">
+                                <line x1="100" y1="0" x2="0" y2="0" stroke="black" stroke-width="4"/>
+                                <polygon points="0,0 15,-10 15,10" fill="black"/>
+                                <text x="50" y="-10" font-family="Inter" font-size="12px" font-weight="bold" text-anchor="middle">To Denison Library</text>
+                            </g>
+
+
+                            <!-- RIVER BIRCH COMPLEX (Right side) -->
+                            <!-- River Birch A -->
+                            <polygon id="room-River_Birch_A" class="room-shape" 
+                                     points="510,120 620,120 620,380 510,380" 
+                                     onclick="selectRoom('River Birch A')" />
+                            <text x="565" y="250" class="room-label">River Birch A</text>
+
+                            <!-- River Birch B -->
+                            <polygon id="room-River_Birch_B" class="room-shape" 
+                                     points="620,120 730,120 730,380 620,380" 
+                                     onclick="selectRoom('River Birch B')" />
+                            <text x="675" y="250" class="room-label">River Birch B</text>
+
+                            <!-- River Birch C -->
+                            <polygon id="room-River_Birch_C" class="room-shape" 
+                                     points="730,120 830,120 880,170 880,250 730,250" 
+                                     onclick="selectRoom('River Birch C')" />
+                            <text x="800" y="180" class="room-label">River Birch C</text>
+
+                            <!-- River Birch D -->
+                            <polygon id="room-River_Birch_D" class="room-shape" 
+                                     points="730,250 880,250 880,330 830,380 730,380" 
+                                     onclick="selectRoom('River Birch D')" />
+                            <text x="800" y="320" class="room-label">River Birch D</text>
+
+
+                            <!-- BOTTOM LEFT ROOMS -->
+                            <!-- Buckeye Boardroom -->
+                            <polygon id="room-Boardroom" class="room-shape" 
+                                     points="40,360 100,360 100,430 70,460 40,430" 
+                                     onclick="selectRoom('Boardroom')" />
+                            <text x="70" y="400" class="room-label" style="font-size: 10px;">Buckeye</text>
+                            <text x="70" y="412" class="room-label" style="font-size: 10px;">Boardroom</text>
+
+                            <!-- Flint Ridge -->
+                            <polygon id="room-Flint" class="room-shape" 
+                                     points="100,360 210,360 210,480 220,490 200,510 100,510 70,460 100,430" 
+                                     onclick="selectRoom('Flint')" />
+                            <text x="150" y="435" class="room-label">Flint Ridge</text>
+                            
+                            <!-- Draw some abstract doors for realism (just visual) -->
+                            <!-- Woodhull doors -->
+                            <rect x="130" y="45" width="20" height="10" class="door" />
+                            <rect x="155" y="45" width="20" height="10" class="door" />
+                            <rect x="240" y="45" width="20" height="10" class="door" />
+                            <rect x="265" y="45" width="20" height="10" class="door" />
+                            <rect x="340" y="45" width="20" height="10" class="door" />
+                            <rect x="365" y="45" width="20" height="10" class="door" />
+                            
+                            <!-- River birch doors top -->
+                            <rect x="520" y="95" width="15" height="10" class="door" />
+                            <rect x="540" y="95" width="15" height="10" class="door" />
+                            <rect x="680" y="95" width="15" height="10" class="door" />
+                            <rect x="700" y="95" width="15" height="10" class="door" />
+                            <rect x="760" y="95" width="15" height="10" class="door" />
+                            <rect x="780" y="95" width="15" height="10" class="door" />
+
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Room Details Card -->
+                <div id="room-details" class="bg-slate-50 p-4 rounded-lg border border-slate-200 min-h-[100px] hidden">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 id="detail-title" class="font-bold text-lg text-slate-800">Room Name</h3>
+                        <button onclick="clearSelection()" class="text-slate-400 hover:text-slate-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div id="detail-events" class="text-sm text-slate-600 space-y-2">
+                        <!-- Events populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Schedule List -->
+        <section class="w-full lg:w-1/2 flex flex-col">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-full">
+                
+                <!-- Day Tabs -->
+                <div class="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                    <button class="tab-btn active-tab flex-1 py-3 px-4 text-sm font-medium text-slate-600 text-center" onclick="switchTab('friday', this)">Friday (Aug 14)</button>
+                    <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-slate-600 text-center border-l border-slate-200" onclick="switchTab('saturday', this)">Saturday (Aug 15)</button>
+                    <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-slate-600 text-center border-l border-slate-200" onclick="switchTab('sunday', this)">Sunday (Aug 16)</button>
+                </div>
+
+                <!-- Schedule Content -->
+                <div class="schedule-container p-4 bg-white relative">
+                    
+                    <!-- FRIDAY -->
+                    <div id="friday" class="tab-content active space-y-3">
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_Hallway'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:00pm</span>
+                                <span class="room-badge">Woodhull Hallway</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Registration Opens</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['River_Birch_C', 'River_Birch_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">4:00pm</span>
+                                <span class="room-badge">River Birch C & D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Hospitality Opens</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Flint', 'Boardroom'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">4:00pm</span>
+                                <span class="room-badge">Flint / Boardroom</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Literature & Archives Opens</h4>
+                        </div>
+
+                        <div class="pt-4 pb-2"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">4:00pm Pre-Convention Panels</h3></div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">4:00pm</span>
+                                <span class="room-badge">Woodhull BC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">The Balanced Life: Three Legacies to Stay Upright</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">4:00pm</span>
+                                <span class="room-badge">Woodhull D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Al-Anon Fellowship</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">4:00pm</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Latino Fellowship</h4>
+                        </div>
+
+                        <div class="p-3 rounded bg-slate-50 border border-slate-100 text-center opacity-70">
+                            <span class="font-bold text-slate-500 mr-2">5:30pm</span>
+                            <span class="font-medium text-slate-600 italic">Dinner on Your Own</span>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">7:30pm</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Opening & Welcome</h4>
+                            <p class="text-sm text-slate-600 mt-1">Greetings: Joel K. (Area 53 Delegate)<br>Spirituality: Frank G.<br>GSO Report: Michael R.</p>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">8:30pm</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Friday Night Speaker Meeting</h4>
+                            <p class="text-sm text-slate-600 mt-1">Chair: Josh D. (Area 55 Delegate)<br>Speaker: Sherry S. (ECR Trustee)</p>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">10:00pm</span>
+                                <span class="room-badge">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Entertainment</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">11:00pm</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Late Night Meeting</h4>
+                        </div>
+                    </div>
+
+                    <!-- SATURDAY -->
+                    <div id="saturday" class="tab-content space-y-3">
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">7:00am</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Early Bird AA Meeting</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_Hallway', 'River_Birch_C', 'River_Birch_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:00am</span>
+                                <span class="room-badge text-right">Hallway<br>River Birch C & D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Registration & Hospitality Opens</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:00am</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Morning Meditation Meeting</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Boardroom', 'Flint'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:00am</span>
+                                <span class="room-badge">Boardroom / Flint</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Archives Room & Literature Opens</h4>
+                        </div>
+
+                        <div class="pt-4 pb-2"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">8:45am Saturday Morning Panels</h3></div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_B'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:45am</span>
+                                <span class="room-badge">Woodhull B</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Growing in the Concepts</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:45am</span>
+                                <span class="room-badge">Woodhull C</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Respecting Anonymity in Modern Technology</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:45am</span>
+                                <span class="room-badge">Woodhull D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Al-Anon Speaker Panel on Steps 1, 2, 3</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">10:45am</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Saturday Morning Speaker Meeting</h4>
+                            <p class="text-sm text-slate-600 mt-1">Chair: Bev F. (Area 54 Delegate)<br>Speaker: Bob D. (Ohio State Convention Archivist)</p>
+                        </div>
+
+                        <div class="p-3 rounded bg-slate-50 border border-slate-100 text-center opacity-70">
+                            <span class="font-bold text-slate-500 mr-2">12:00pm</span>
+                            <span class="font-medium text-slate-600 italic">Lunch on Your Own</span>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">1:30pm</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Al-Anon Speaker Meeting & Skit</h4>
+                            <p class="text-sm text-slate-600 mt-1">Speaker: Tom B. (Central Ohio Al-Anon Family Groups)</p>
+                        </div>
+
+                        <div class="pt-4 pb-2"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3:30pm Saturday Afternoon Panels</h3></div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:30pm</span>
+                                <span class="room-badge">Woodhull A</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">What Unites Us?: Our Common Suffering...</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_B'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:30pm</span>
+                                <span class="room-badge">Woodhull B</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Sponsorship and the Three Legacies</h4>
+                        </div>
+                        
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:30pm</span>
+                                <span class="room-badge">Woodhull C</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Mentoring the Next Trusted Servant</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:30pm</span>
+                                <span class="room-badge">Woodhull D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Al-Anon Meeting</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">3:30pm</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Open Spanish Speaking Panel</h4>
+                        </div>
+
+                        <div class="p-3 rounded bg-slate-50 border border-slate-100 text-center opacity-70">
+                            <span class="font-bold text-slate-500 mr-2">5:00pm</span>
+                            <span class="font-medium text-slate-600 italic">Dinner on Your Own</span>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-amber-200 shadow-sm" onclick="selectEvent(['River_Birch_A', 'River_Birch_B'], this)" style="border-left-color: #fbbf24;">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-amber-700 text-lg">5:30pm</span>
+                                <span class="room-badge bg-amber-100 text-amber-800">River Birch A & B</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Banquet Dinner (Pre-paid)</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">8:00pm</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Saturday Night Meeting</h4>
+                            <p class="text-sm text-slate-600 mt-1">Chair: Joel K. (Area 53 Delegate)<br>ECR Report: Sherry S.<br>Speaker: Michael R. (GSO Staffer)</p>
+                        </div>
+                        
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">9:30pm</span>
+                                <span class="room-badge">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Sobriety Countdown (OYPAA)</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">9:45pm</span>
+                                <span class="room-badge">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Musical Entertainment</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">11:00pm</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Late Night Meeting</h4>
+                        </div>
+                    </div>
+
+                    <!-- SUNDAY -->
+                    <div id="sunday" class="tab-content space-y-3">
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">7:00am</span>
+                                <span class="room-badge">Woodhull E</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Early Bird AA Meeting</h4>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:00am</span>
+                                <span class="room-badge">Woodhull A</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">71st Ohio State Convention of AA Planning Committee Meeting</h4>
+                            <p class="text-sm text-slate-500 mt-1 italic">Please plan to attend if interested.</p>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">9:00am</span>
+                                <span class="room-badge">Woodhull BC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Convention Sharing Session</h4>
+                            <p class="text-sm text-slate-600 mt-1">Chair: Marcia H. (Area 53 Alt. Delegate)</p>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700 text-lg">10:30am</span>
+                                <span class="room-badge bg-sky-100 text-sky-800">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg">Sunday Morning Speaker</h4>
+                            <p class="text-sm text-slate-600 mt-1">Chair: Tim C. (Area 56 Delegate)<br>Speaker: Mark E. (Past ECR Trustee)</p>
+                        </div>
+
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">11:45am</span>
+                                <span class="room-badge">Woodhull ABC</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Closing Remarks</h4>
+                            <p class="text-sm text-slate-600 mt-1">Joel K. (Area 53 Delegate)</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Data structure to map rooms to their events (for clicking on the map)
+        const roomSchedules = {
+            "Woodhull A": [
+                { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
+                { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
+                { time: "Saturday 3:30pm", title: "Panel: What Unites Us?" },
+                { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
+                { time: "Sunday 8:00am", title: "Planning Committee Meeting" },
+                { time: "Sunday 10:30am", title: "Sunday Morning Speaker (ABC)" }
+            ],
+            "Woodhull B": [
+                { time: "Friday 4:00pm", title: "Panel: The Balanced Life (BC)" },
+                { time: "Saturday 8:45am", title: "Panel: Growing in the Concepts" },
+                { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
+                { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
+                { time: "Saturday 3:30pm", title: "Panel: Sponsorship and the Three Legacies" },
+                { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
+                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" }
+            ],
+            "Woodhull C": [
+                { time: "Friday 4:00pm", title: "Panel: The Balanced Life (BC)" },
+                { time: "Saturday 8:45am", title: "Panel: Respecting Anonymity in Modern Technology" },
+                { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
+                { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
+                { time: "Saturday 3:30pm", title: "Panel: Mentoring the Next Trusted Servant" },
+                { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
+                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" }
+            ],
+            "Woodhull D": [
+                { time: "Friday 4:00pm", title: "Al-Anon Fellowship" },
+                { time: "Saturday 8:45am", title: "Al-Anon Speaker Panel on Steps 1, 2, 3" },
+                { time: "Saturday 3:30pm", title: "Al-Anon Meeting" }
+            ],
+            "Woodhull E": [
+                { time: "Friday 4:00pm", title: "Latino Fellowship" },
+                { time: "Friday 11:00pm", title: "Late Night Meeting" },
+                { time: "Saturday 7:00am", title: "Early Bird AA Meeting" },
+                { time: "Saturday 8:00am", title: "Morning Meditation Meeting" },
+                { time: "Saturday 3:30pm", title: "Open Spanish Speaking Panel" },
+                { time: "Saturday 11:00pm", title: "Late Night Meeting" },
+                { time: "Sunday 7:00am", title: "Early Bird AA Meeting" }
+            ],
+            "Woodhull Hallway": [
+                { time: "Friday 3:00pm", title: "Registration Opens" },
+                { time: "Saturday 8:00am", title: "Registration & Hospitality Opens" }
+            ],
+            "River Birch A": [
+                { time: "Saturday 5:30pm", title: "Banquet Dinner (AB)" }
+            ],
+            "River Birch B": [
+                { time: "Saturday 5:30pm", title: "Banquet Dinner (AB)" }
+            ],
+            "River Birch C": [
+                { time: "Friday 4:00pm", title: "Hospitality Opens (CD)" },
+                { time: "Saturday 8:00am", title: "Hospitality Opens (CD)" }
+            ],
+            "River Birch D": [
+                { time: "Friday 4:00pm", title: "Hospitality Opens (CD)" },
+                { time: "Saturday 8:00am", title: "Hospitality Opens (CD)" }
+            ],
+            "Flint": [
+                { time: "Friday 4:00pm", title: "Literature Opens" },
+                { time: "Saturday 8:00am", title: "Literature Opens" }
+            ],
+            "Boardroom": [
+                { time: "Friday 4:00pm", title: "Archives Opens" },
+                { time: "Saturday 8:00am", title: "Archives Opens" }
+            ]
+        };
+
+        // Tab Switching Logic
+        function switchTab(tabId, btnElement) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+            btnElement.classList.add('active-tab');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+
+            clearSelection();
+        }
+
+        // Map & Schedule Interaction Logic
+        function clearSelection() {
+            // Clear map highlights
+            document.querySelectorAll('.room-shape').forEach(room => {
+                room.classList.remove('active-room');
+            });
+
+            // Clear schedule highlights
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('active-event');
+            });
+
+            // Hide details panel
+            document.getElementById('room-details').classList.add('hidden');
+        }
+
+        // Called when a user clicks a Room on the SVG map
+        function selectRoom(roomName) {
+            clearSelection();
+
+            // Format id string (e.g. "Woodhull A" -> "room-Woodhull_A")
+            const elementId = `room-${roomName.replace(/ /g, '_')}`;
+            const roomEl = document.getElementById(elementId);
+            
+            if(roomEl) {
+                roomEl.classList.add('active-room');
+            } else {
+                console.warn("Could not find room element with ID:", elementId);
+            }
+
+            // Populate and show the details panel beneath the map
+            const detailsPanel = document.getElementById('room-details');
+            const titleEl = document.getElementById('detail-title');
+            const eventsEl = document.getElementById('detail-events');
+
+            titleEl.textContent = roomName;
+            eventsEl.innerHTML = '';
+
+            const events = roomSchedules[roomName] || [];
+            
+            if (events.length > 0) {
+                events.forEach(ev => {
+                    const div = document.createElement('div');
+                    div.className = 'border-l-2 border-sky-300 pl-2 py-1';
+                    div.innerHTML = `<span class="font-bold text-slate-700">${ev.time}:</span> ${ev.title}`;
+                    eventsEl.appendChild(div);
+                });
+            } else {
+                eventsEl.innerHTML = '<p class="text-slate-400 italic">No scheduled events found for this specific room.</p>';
+            }
+
+            detailsPanel.classList.remove('hidden');
+        }
+
+        // Called when a user clicks an Event on the Schedule
+        function selectEvent(roomIdsArray, eventCardElement) {
+            clearSelection();
+
+            // Highlight the clicked card
+            if (eventCardElement) {
+                eventCardElement.classList.add('active-event');
+            }
+
+            // Highlight multiple rooms on the map if it's a combined event (like Woodhull ABC)
+            let displayNames = [];
+            roomIdsArray.forEach(roomId => {
+                const elementId = `room-${roomId}`;
+                const roomEl = document.getElementById(elementId);
+                if(roomEl) {
+                    roomEl.classList.add('active-room');
+                    // Convert the ID back to a readable name for the display panel
+                    displayNames.push(roomId.replace(/_/g, ' '));
+                } else {
+                    console.warn("Schedule tried to highlight missing room ID:", elementId);
+                }
+            });
+
+            // Update details panel to show which rooms are highlighted
+            const detailsPanel = document.getElementById('room-details');
+            const titleEl = document.getElementById('detail-title');
+            const eventsEl = document.getElementById('detail-events');
+
+            // Handle combined names nicely
+            let combinedTitle = displayNames.join(', ');
+            if(displayNames.includes('Woodhull A') && displayNames.includes('Woodhull B') && displayNames.includes('Woodhull C')) {
+                combinedTitle = "Woodhull ABC";
+            } else if (displayNames.includes('River Birch C') && displayNames.includes('River Birch D')) {
+                combinedTitle = "River Birch C & D";
+            }
+
+            titleEl.textContent = combinedTitle;
+            eventsEl.innerHTML = `<p class="text-sky-700 font-medium">Map highlighted for selected schedule event.</p>`;
+            detailsPanel.classList.remove('hidden');
+
+            // On mobile, scroll up to the map so they can see the highlight
+            if (window.innerWidth < 1024) {
+                document.querySelector('.map-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    </script>
+</body>
+</html>
