@@ -339,20 +339,12 @@
                             <h4 class="font-semibold text-slate-800">Registration Opens</h4>
                         </div>
 
-                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['River_Birch_C', 'River_Birch_D'], this)">
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['River_Birch_C', 'River_Birch_D', 'Flint', 'Boardroom'], this)">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="font-bold text-sky-700">4:00pm</span>
-                                <span class="room-badge">River Birch C & D</span>
+                                <span class="room-badge text-right">River Birch C & D<br>Flint / Boardroom</span>
                             </div>
-                            <h4 class="font-semibold text-slate-800">Hospitality Opens</h4>
-                        </div>
-
-                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Flint', 'Boardroom'], this)">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-bold text-sky-700">4:00pm</span>
-                                <span class="room-badge">Flint / Boardroom</span>
-                            </div>
-                            <h4 class="font-semibold text-slate-800">Literature & Archives Opens</h4>
+                            <h4 class="font-semibold text-slate-800">Hospitality, Literature & Archives Opens</h4>
                         </div>
 
                         <div class="pt-4 pb-2"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">4:00pm Pre-Convention Panels</h3></div>
@@ -404,12 +396,20 @@
                             <p class="text-sm text-slate-600 mt-1">Chair: Josh D. (Area 55 Delegate)<br>Speaker: Sherry S. (ECR Trustee)</p>
                         </div>
 
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['River_Birch_C', 'River_Birch_D'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">10:00pm</span>
+                                <span class="room-badge">River Birch C & D</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Ice Cream Social</h4>
+                        </div>
+                        
                         <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A', 'Woodhull_B', 'Woodhull_C'], this)">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="font-bold text-sky-700">10:00pm</span>
                                 <span class="room-badge">Woodhull ABC</span>
                             </div>
-                            <h4 class="font-semibold text-slate-800">Entertainment</h4>
+                            <h4 class="font-semibold text-slate-800">Karaoke</h4>
                         </div>
 
                         <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_E'], this)">
@@ -457,12 +457,20 @@
 
                         <div class="pt-4 pb-2"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">8:45am Saturday Morning Panels</h3></div>
 
+                        <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_A'], this)">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-sky-700">8:45am</span>
+                                <span class="room-badge">Woodhull A</span>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Growing in the Concepts</h4>
+                        </div>
+                        
                         <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_B'], this)">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="font-bold text-sky-700">8:45am</span>
                                 <span class="room-badge">Woodhull B</span>
                             </div>
-                            <h4 class="font-semibold text-slate-800">Growing in the Concepts</h4>
+                            <h4 class="font-semibold text-slate-800">Spiritual Benefit of Participating in Service</h4>
                         </div>
 
                         <div class="event-card p-3 rounded bg-white border border-slate-100 shadow-sm" onclick="selectEvent(['Woodhull_C'], this)">
@@ -649,30 +657,51 @@
         // Data structure to map rooms to their events (for clicking on the map)
         const roomSchedules = {
             "Woodhull A": [
+                { time: "Friday 7:30pm", title: "Opening & Welcome (ABC)" },
+                { time: "Friday 8:30pm", title: "Friday Night Speaker Meeting (ABC)" },
+                { time: "Friday 10:00pm", title: "Karaoke (ABC)" },
+                { time: "Saturday 8:45am", title: "Panel: Growing in the Concepts" },
                 { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
                 { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
                 { time: "Saturday 3:30pm", title: "Panel: What Unites Us?" },
                 { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
+                { time: "Saturday 9:30pm", title: "Sobriety Countdown (ABC)" },
+                { time: "Saturday 9:45pm", title: "Musical Entertainment (ABC)" },
                 { time: "Sunday 8:00am", title: "Planning Committee Meeting" },
-                { time: "Sunday 10:30am", title: "Sunday Morning Speaker (ABC)" }
+                { time: "Sunday 10:30am", title: "Sunday Morning Speaker (ABC)" },
+                { time: "Sunday 11:45am", title: "Closing Remarks (ABC)" }
             ],
             "Woodhull B": [
                 { time: "Friday 4:00pm", title: "Panel: The Balanced Life (BC)" },
-                { time: "Saturday 8:45am", title: "Panel: Growing in the Concepts" },
+                { time: "Friday 7:30pm", title: "Opening & Welcome (ABC)" },
+                { time: "Friday 8:30pm", title: "Friday Night Speaker Meeting (ABC)" },
+                { time: "Friday 10:00pm", title: "Karaoke (ABC)" },
+                { time: "Saturday 8:45am", title: "Panel: Spiritual Benefit of Participating in Service" },
                 { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
                 { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
                 { time: "Saturday 3:30pm", title: "Panel: Sponsorship and the Three Legacies" },
                 { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
-                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" }
+                { time: "Saturday 9:30pm", title: "Sobriety Countdown (ABC)" },
+                { time: "Saturday 9:45pm", title: "Musical Entertainment (ABC)" },
+                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" },
+                { time: "Sunday 10:30am", title: "Sunday Morning Speaker (ABC)" },
+                { time: "Sunday 11:45am", title: "Closing Remarks (ABC)" }
             ],
             "Woodhull C": [
                 { time: "Friday 4:00pm", title: "Panel: The Balanced Life (BC)" },
+                { time: "Friday 7:30pm", title: "Opening & Welcome (ABC)" },
+                { time: "Friday 8:30pm", title: "Friday Night Speaker Meeting (ABC)" },
+                { time: "Friday 10:00pm", title: "Karaoke (ABC)" },
                 { time: "Saturday 8:45am", title: "Panel: Respecting Anonymity in Modern Technology" },
                 { time: "Saturday 10:45am", title: "Saturday Morning Speaker Meeting (ABC)" },
                 { time: "Saturday 1:30pm", title: "Al-Anon Speaker Meeting (ABC)" },
                 { time: "Saturday 3:30pm", title: "Panel: Mentoring the Next Trusted Servant" },
                 { time: "Saturday 8:00pm", title: "Saturday Night Meeting (ABC)" },
-                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" }
+                { time: "Saturday 9:30pm", title: "Sobriety Countdown (ABC)" },
+                { time: "Saturday 9:45pm", title: "Musical Entertainment (ABC)" },
+                { time: "Sunday 9:00am", title: "Convention Sharing Session (BC)" },
+                { time: "Sunday 10:30am", title: "Sunday Morning Speaker (ABC)" },
+                { time: "Sunday 11:45am", title: "Closing Remarks (ABC)" }
             ],
             "Woodhull D": [
                 { time: "Friday 4:00pm", title: "Al-Anon Fellowship" },
@@ -699,19 +728,21 @@
                 { time: "Saturday 5:30pm", title: "Banquet Dinner (AB)" }
             ],
             "River Birch C": [
-                { time: "Friday 4:00pm", title: "Hospitality Opens (CD)" },
+                { time: "Friday 4:00pm", title: "Hospitality Opens" },
+                { time: "Friday 10:00pm", title: "Ice Cream Social (CD)" },
                 { time: "Saturday 8:00am", title: "Hospitality Opens (CD)" }
             ],
             "River Birch D": [
-                { time: "Friday 4:00pm", title: "Hospitality Opens (CD)" },
+                { time: "Friday 4:00pm", title: "Hospitality Opens" },
+                { time: "Friday 10:00pm", title: "Ice Cream Social (CD)" },
                 { time: "Saturday 8:00am", title: "Hospitality Opens (CD)" }
             ],
             "Flint": [
-                { time: "Friday 4:00pm", title: "Literature Opens" },
+                { time: "Friday 4:00pm", title: "Hospitality, Literature & Archives Opens" },
                 { time: "Saturday 8:00am", title: "Literature Opens" }
             ],
             "Boardroom": [
-                { time: "Friday 4:00pm", title: "Archives Opens" },
+                { time: "Friday 4:00pm", title: "Hospitality, Literature & Archives Opens" },
                 { time: "Saturday 8:00am", title: "Archives Opens" }
             ]
         };
